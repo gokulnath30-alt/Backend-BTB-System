@@ -29,7 +29,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/actuator/**").permitAll()
+                        .requestMatchers("/", "/error", "/favicon.ico", "/api/auth/**", "/actuator/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/buses/**", "/api/routes/**", "/api/schedules/**")
                         .permitAll()
                         .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
