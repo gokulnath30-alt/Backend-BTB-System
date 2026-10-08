@@ -45,32 +45,34 @@ public class RouteDataInitializer implements CommandLineRunner {
     }
 
     private void seedDefaultUsers() {
-        if (userRepository.count() == 0) {
-            userRepository.save(User.builder()
-                    .email("admin@example.com")
-                    .name("System Admin")
-                    .password(passwordEncoder.encode("password"))
-                    .role(Role.ADMIN)
-                    .phone("+1-555-0100")
-                    .build());
+        ensureUser("admin@busticket.com", "System Admin", Role.ADMIN, "+1-555-0100", "password");
+        ensureUser("admin@example.com", "System Admin", Role.ADMIN, "+1-555-0100", "password");
+        ensureUser("operator1@example.com", "Express Operator", Role.OPERATOR, "+1-555-0101", "password");
+        ensureUser("passenger@gmail.com", "Alex Passenger", Role.USER, "+1-555-0102", "password");
+        ensureUser("customer1@example.com", "Alex Customer", Role.USER, "+1-555-0102", "password");
+    }
 
-            userRepository.save(User.builder()
-                    .email("operator1@example.com")
-                    .name("Express Operator")
-                    .password(passwordEncoder.encode("password"))
-                    .role(Role.OPERATOR)
-                    .phone("+1-555-0101")
-                    .build());
-
-            userRepository.save(User.builder()
-                    .email("customer1@example.com")
-                    .name("Alex Customer")
-                    .password(passwordEncoder.encode("password"))
-                    .role(Role.USER)
-                    .phone("+1-555-0102")
-                    .build());
-            log.info("Default seed users (Admin, Operator, Customer) created successfully.");
-        }
+    private void ensureUser(String email, String name, Role role, String phone, String rawPassword) {
+        userRepository.findByEmail(email).ifPresentOrElse(
+                user -> {
+                    user.setName(name);
+                    user.setRole(role);
+                    user.setPhone(phone);
+                    user.setPassword(passwordEncoder.encode(rawPassword));
+                    userRepository.save(user);
+                    log.info("Default user {} updated with latest credentials and role {}.", email, role);
+                },
+                () -> {
+                    userRepository.save(User.builder()
+                            .email(email)
+                            .name(name)
+                            .role(role)
+                            .phone(phone)
+                            .password(passwordEncoder.encode(rawPassword))
+                            .build());
+                    log.info("Default seed user {} created successfully with role {}.", email, role);
+                }
+        );
     }
 
     private void seedAllRoutesAndSchedules() {
