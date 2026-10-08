@@ -1,16 +1,20 @@
 package com.busticket.config;
 
 import com.busticket.entity.Bus;
+import com.busticket.entity.Role;
 import com.busticket.entity.Route;
 import com.busticket.entity.Schedule;
 import com.busticket.entity.Seat;
+import com.busticket.entity.User;
 import com.busticket.repository.BusRepository;
 import com.busticket.repository.RouteRepository;
 import com.busticket.repository.ScheduleRepository;
 import com.busticket.repository.SeatRepository;
+import com.busticket.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -27,13 +31,45 @@ public class RouteDataInitializer implements CommandLineRunner {
     private final BusRepository busRepository;
     private final ScheduleRepository scheduleRepository;
     private final SeatRepository seatRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) {
         try {
+            seedDefaultUsers();
             seedAllRoutesAndSchedules();
         } catch (Exception e) {
             log.error("Error initializing route seed data: {}", e.getMessage(), e);
+        }
+    }
+
+    private void seedDefaultUsers() {
+        if (userRepository.count() == 0) {
+            userRepository.save(User.builder()
+                    .email("admin@example.com")
+                    .name("System Admin")
+                    .password(passwordEncoder.encode("password"))
+                    .role(Role.ADMIN)
+                    .phone("+1-555-0100")
+                    .build());
+
+            userRepository.save(User.builder()
+                    .email("operator1@example.com")
+                    .name("Express Operator")
+                    .password(passwordEncoder.encode("password"))
+                    .role(Role.OPERATOR)
+                    .phone("+1-555-0101")
+                    .build());
+
+            userRepository.save(User.builder()
+                    .email("customer1@example.com")
+                    .name("Alex Customer")
+                    .password(passwordEncoder.encode("password"))
+                    .role(Role.USER)
+                    .phone("+1-555-0102")
+                    .build());
+            log.info("Default seed users (Admin, Operator, Customer) created successfully.");
         }
     }
 
